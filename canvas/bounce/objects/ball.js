@@ -4,12 +4,15 @@ class Ball extends Circle {
     this.tag = "ball";
     this.color = "#e74c3c";
     this.isStand = false;
+  }
 
-    setInterval(() => {
-      if (this.isStand) {
-        this.jump();
-      }
-    }, 500);
+  onUpdate() {
+    if (this.isStand) {
+      this.jump();
+    }
+    if (this.y > canvas.height) {
+      this.world.removeEntity(this);
+    }
   }
 
   jump() {
@@ -19,10 +22,25 @@ class Ball extends Circle {
 
   onCollision(target) {
     if (target.tag === "ground") {
-      if (this.y + this.radius > target.y) {
+      if (
+        this.x + this.radius > target.x &&
+        this.y < target.y + 10 &&
+        this.y + this.radius >= target.y &&
+        this.y + this.radius + this.vec.y >= target.y
+      ) {
         this.vec.y = 0;
         this.y = target.y - this.radius;
         this.isStand = true;
+      }
+
+      if (
+        this.y + this.radius > target.y &&
+        (this.x < target.x) &
+          (this.x + this.radius >= target.x) &
+          (this.x + this.radius + this.vec.x >= target.x)
+      ) {
+        this.vec.x = 0;
+        this.x = target.x - this.radius;
       }
     }
   }

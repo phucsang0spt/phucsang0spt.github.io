@@ -7,10 +7,16 @@ class Rectangle {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.color = "#fff";
+    this.color = "#ffffff00";
     this.vec = vec;
     this.gravity = 0;
     this.lastCollTargets = {};
+    this.world = null;
+  }
+
+  addForce(acc) {
+    this.vec.x += acc.x;
+    this.vec.y += acc.y;
   }
 
   initial() {

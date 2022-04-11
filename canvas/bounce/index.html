@@ -8,6 +8,16 @@
 <canvas />
 
 <script>
+  function getRndColor() {
+    var r = (255 * Math.random()) | 0,
+      g = (255 * Math.random()) | 0,
+      b = (255 * Math.random()) | 0;
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
   const canvas = document.getElementsByTagName("canvas")[0];
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -17,4 +27,6 @@
 <script src="./objects/ground.js"></script>
 <script src="./objects/block.js"></script>
 <script src="./objects/ball.js"></script>
-<script src="./script.js"></script>
+<script src="./objects/balls-cumer.js"></script>
+<script src="./world.js"></script>
+<script src="./main.js"></script>
