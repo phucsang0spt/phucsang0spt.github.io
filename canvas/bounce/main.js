@@ -38,6 +38,59 @@ function initial() {
 
   const cumer = new BallsCumer(canvas.width / 2, 0);
   world.addEntity(cumer);
+
+  setInterval(() => {
+    for (const entity of world.entities) {
+      if (entity.tag === "ground") {
+        const force = {
+          x: getRandomArbitrary(-0.2, 0.2),
+          y: getRandomArbitrary(-0.4, 0.4),
+        };
+        entity.addForce(force);
+        if (entity.y + entity.vec.y > canvas.height) {
+          entity.addForce({
+            x: 0,
+            y: -1,
+          });
+        }
+
+        if (entity.y + entity.vec.y < canvas.height / 2) {
+          entity.addForce({
+            x: 0,
+            y: 1,
+          });
+        }
+
+        if (entity.x + entity.vec.y < 0) {
+          entity.addForce({
+            x: 1,
+            y: 0,
+          });
+        }
+        if (entity.x + entity.vec.y > canvas.width) {
+          entity.addForce({
+            x: -1,
+            y: 0,
+          });
+        }
+      }
+    }
+  }, 1000);
+
+  window.addEventListener(
+    "onWind",
+    function (e) {
+      for (const entity of world.entities) {
+        if (entity.tag === "ball") {
+          entity.addForce({
+            x: -5,
+            y: Math.random() * 1,
+          });
+        }
+      }
+    },
+    false
+  );
 }
 
 function loop() {
