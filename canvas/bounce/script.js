@@ -5,15 +5,15 @@ function initial() {
     obj.setY(canvas.height - obj.height - 100);
   });
   const ground2 = new Ground(500, 0, 400, 50).onBind((obj) => {
-    obj.setY(canvas.height - obj.height - 200);
+    obj.setY(canvas.height - obj.height - 180);
   });
-  ground2.id = "test";
 
   const block = new Block(ground1.x + ground2.width / 2, 0, 50, 50).onBind(
     (obj) => {
       obj.setY(ground1.y - obj.height - 100);
     }
   );
+  window.block = block;
 
   const ball = new Ball(ground2.x + ground2.width / 2, 0, 25).onBind((obj) => {
     obj.setY(ground2.y - obj.height - 100);
@@ -26,8 +26,6 @@ function initial() {
 
   let lastGrond = ground2;
   for (const i in Array.from({ length: 4 })) {
-    console.log("i", i);
-
     lastGrond = new Ground(
       20 + (lastGrond.x + lastGrond.width),
       0,
@@ -49,7 +47,7 @@ function blowWind() {
       worldObject.vec.x += 2;
 
       setTimeout(() => {
-        worldObject.vec.x -= 2;
+        worldObject.vec.x = 0;
       }, 1000);
     }
   }
