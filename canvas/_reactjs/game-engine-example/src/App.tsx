@@ -1,5 +1,5 @@
-import { ScenesProcess } from "react-simple-game-engine";
 import styled, { keyframes } from "styled-components";
+import { GameBootstrap } from "react-simple-game-engine";
 
 import { Menu } from "./scenes/menu.scene";
 import { Scene1 } from "./scenes/sc1.scene";
@@ -41,8 +41,8 @@ const AssetsLoader = styled.div<{
 function App() {
   return (
     <GameContainer>
-      <ScenesProcess
-        list={[Menu, Scene1]}
+      <GameBootstrap
+        scenes={[Menu, Scene1]}
         width={1040}
         height={650}
         assetsLoader={<AssetsLoader sprite={SpinnerImg} />}
