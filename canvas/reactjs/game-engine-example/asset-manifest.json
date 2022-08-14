@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/canvas/reactjs/game-engine-example/static/css/main.5e41044a.css",
-    "main.js": "/canvas/reactjs/game-engine-example/static/js/main.c67410fb.js",
+    "main.js": "/canvas/reactjs/game-engine-example/static/js/main.79027ad6.js",
     "static/media/background.wav": "/canvas/reactjs/game-engine-example/static/media/background.bfad15f020cc69d65274.wav",
     "static/media/win.wav": "/canvas/reactjs/game-engine-example/static/media/win.a7022fca9be01d175603.wav",
     "static/media/lose.wav": "/canvas/reactjs/game-engine-example/static/media/lose.a1164b5f1d76ba77ba41.wav",
@@ -16,10 +16,10 @@
     "static/media/lv2-enemy.png": "/canvas/reactjs/game-engine-example/static/media/lv2-enemy.cb511151f297c66037eb.png",
     "index.html": "/canvas/reactjs/game-engine-example/index.html",
     "main.5e41044a.css.map": "/canvas/reactjs/game-engine-example/static/css/main.5e41044a.css.map",
-    "main.c67410fb.js.map": "/canvas/reactjs/game-engine-example/static/js/main.c67410fb.js.map"
+    "main.79027ad6.js.map": "/canvas/reactjs/game-engine-example/static/js/main.79027ad6.js.map"
   },
   "entrypoints": [
     "static/css/main.5e41044a.css",
-    "static/js/main.c67410fb.js"
+    "static/js/main.79027ad6.js"
   ]
 }
