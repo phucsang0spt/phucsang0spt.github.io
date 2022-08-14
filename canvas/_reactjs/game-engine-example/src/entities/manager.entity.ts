@@ -42,6 +42,13 @@ export class Manager extends RectEntity<Props> {
   }
 
   onActive(): void {
+    this.scene.onProcessStateChangeListener((isFore) => {
+      if (isFore) {
+        this.props.backgroundMusic.play();
+      } else {
+        this.props.backgroundMusic.native.pause();
+      }
+    });
     this.props.backgroundMusic.play();
   }
 }

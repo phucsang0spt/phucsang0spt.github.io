@@ -7226,10 +7226,10 @@ react-scripts@5.0.1:
   optionalDependencies:
     fsevents "^2.3.2"
 
-react-simple-game-engine@^0.1.97:
-  version "0.1.97"
-  resolved "https://registry.yarnpkg.com/react-simple-game-engine/-/react-simple-game-engine-0.1.97.tgz#cd5062b9565f5e8fbba06479dc0093bc637bdebe"
-  integrity sha512-jkBKAvxzemksi23XUdsniuCm9wZBcGbfIIFgKz6oJBS13rqs10nJgbGDDLKpPAQZamEaNtdUOqUSiCe57Sb55w==
+react-simple-game-engine@^0.1.98:
+  version "0.1.98"
+  resolved "https://registry.yarnpkg.com/react-simple-game-engine/-/react-simple-game-engine-0.1.98.tgz#144a1f149957c5e14d6fb6735e9cd7be624426bb"
+  integrity sha512-u0HH+2a0TCIq/iVsQWYMVqXmK0VWFCyOXcYWkrh+6083UsgBKuQvLoxzSQDAH0+804+7/DM1V9xXkydMRsFgOQ==
   dependencies:
     "@types/matter-js" "^0.17.7"
     "@types/p5" "^1.4.2"
