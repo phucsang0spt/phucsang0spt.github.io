@@ -22,10 +22,10 @@ export class Background extends RectEntity<Props> {
         },
       ]),
       transform: {
-        x: Renderer.width / 2,
-        y: Renderer.height / 2,
-        width: Renderer.width,
-        height: Renderer.height,
+        x: Renderer.scaler.gameSize.width / 2,
+        y: Renderer.scaler.gameSize.height / 2,
+        width: Renderer.scaler.gameSize.width,
+        height: Renderer.scaler.gameSize.height,
       },
       bodyOptions: {
         isSensor: true,

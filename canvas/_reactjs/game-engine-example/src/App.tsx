@@ -11,9 +11,6 @@ const GameContainer = styled.div`
   height: 100vh;
   background-color: #1c1c1c;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
 `;
 
@@ -28,12 +25,16 @@ const assetsSpinner = keyframes`
 const AssetsLoader = styled.div<{
   sprite: string;
 }>`
+  position: relative;
+  top: 50%;
+  left: 50%;
   width: 100px;
   height: 100px;
   border-radius: 100%;
 
   background-image: url(${({ sprite }) => sprite});
   background-size: cover;
+  transform: translate(-50%, -50%);
 
   animation: ${assetsSpinner} 2s linear infinite;
 `;

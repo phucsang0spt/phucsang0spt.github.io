@@ -63,7 +63,7 @@ export class Bullet extends RectEntity<BulletProps> {
 
   onUpdate(): void {
     this.move();
-    if (this.position.x + this.width / 2 > Renderer.width) {
+    if (this.position.x + this.width / 2 > Renderer.scaler.gameSize.width) {
       this.explose();
     }
   }

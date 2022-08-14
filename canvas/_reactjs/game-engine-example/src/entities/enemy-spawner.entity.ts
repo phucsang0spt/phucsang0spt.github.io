@@ -33,8 +33,8 @@ export class EnemySpawner extends RectEntity<EnemyProps & EnemySpawnerProps> {
   protected onPrepare(): EntityPrepare<this> {
     return {
       transform: {
-        x: Renderer.width / 2,
-        y: Renderer.height / 2,
+        x: Renderer.scaler.gameSize.width / 2,
+        y: Renderer.scaler.gameSize.height / 2,
         width: 10,
         height: 10,
       },
@@ -53,7 +53,7 @@ export class EnemySpawner extends RectEntity<EnemyProps & EnemySpawnerProps> {
 
   private generateSpawnPositions() {
     const zoneTop = EnemySpawner.EnemySize.height / 2 + 20;
-    const length = Renderer.height - zoneTop * 2;
+    const length = Renderer.scaler.gameSize.height - zoneTop * 2;
 
     const amount = Math.floor(length / EnemySpawner.EnemySize.height);
     const redundantSpacing =
@@ -63,7 +63,7 @@ export class EnemySpawner extends RectEntity<EnemyProps & EnemySpawnerProps> {
       length: amount,
     }).map((_, i) => {
       return {
-        x: Renderer.width - EnemySpawner.EnemySize.width / 2,
+        x: Renderer.scaler.gameSize.width - EnemySpawner.EnemySize.width / 2,
         y:
           zoneTop +
           EnemySpawner.EnemySize.height / 2 +

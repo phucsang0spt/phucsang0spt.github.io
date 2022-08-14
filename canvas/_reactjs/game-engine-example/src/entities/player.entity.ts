@@ -39,7 +39,7 @@ export class Player extends RectEntity<PlayerProps> {
       name: "player",
       transform: {
         x: 15 + 40 / 2,
-        y: Renderer.height / 2,
+        y: Renderer.scaler.gameSize.height / 2,
         width: 42,
         height: 42,
       },
@@ -68,7 +68,7 @@ export class Player extends RectEntity<PlayerProps> {
     newY = Renderer.constrain(
       newY,
       0 + this.height / 2,
-      Renderer.height - this.height / 2
+      Renderer.scaler.gameSize.height - this.height / 2
     );
 
     Body.setPosition(this.body, {
