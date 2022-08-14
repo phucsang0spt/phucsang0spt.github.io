@@ -8,7 +8,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.3.1",
-    "react-simple-game-engine": "^0.1.95",
+    "react-simple-game-engine": "^0.1.96",
     "styled-components": "^5.3.5",
     "typescript": "^4.4.2"
   },

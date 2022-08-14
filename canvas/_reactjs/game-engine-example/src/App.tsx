@@ -30,14 +30,22 @@ const AssetsLoader = styled.div<{
   animation: ${assetsSpinner} 2s linear infinite;
 `;
 
+const GameContainer = styled.div`
+  width: 100%;
+  height: 100vh;
+  background-color: rgb(41, 41, 41);
+`;
+
 function App() {
   return (
-    <GameBootstrap
-      scenes={[Menu, Scene1]}
-      width={1040}
-      height={650}
-      assetsLoader={<AssetsLoader sprite={SpinnerImg} />}
-    />
+    <GameContainer>
+      <GameBootstrap
+        scenes={[Menu, Scene1]}
+        width={1040}
+        height={650}
+        assetsLoader={<AssetsLoader sprite={SpinnerImg} />}
+      />
+    </GameContainer>
   );
 }
 
