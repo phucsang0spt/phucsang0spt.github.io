@@ -6,14 +6,6 @@ import { Scene1 } from "./scenes/sc1.scene";
 
 import SpinnerImg from "assets/images/spinner.png";
 
-const GameContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
-  background-color: #1c1c1c;
-
-  position: relative;
-`;
-
 const assetsSpinner = keyframes`
     from {
     }
@@ -40,14 +32,12 @@ const AssetsLoader = styled.div<{
 
 function App() {
   return (
-    <GameContainer>
-      <GameBootstrap
-        scenes={[Menu, Scene1]}
-        width={1040}
-        height={650}
-        assetsLoader={<AssetsLoader sprite={SpinnerImg} />}
-      />
-    </GameContainer>
+    <GameBootstrap
+      scenes={[Menu, Scene1]}
+      width={1040}
+      height={650}
+      assetsLoader={<AssetsLoader sprite={SpinnerImg} />}
+    />
   );
 }
 
