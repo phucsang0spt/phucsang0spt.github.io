@@ -39,7 +39,7 @@ export class Player extends RectEntity<PlayerProps> {
       name: "player",
       transform: {
         x: 15 + 40 / 2,
-        y: Renderer.scaler.gameSize.height / 2,
+        y: Renderer.gameHeight / 2,
         width: 42,
         height: 42,
       },
@@ -68,7 +68,7 @@ export class Player extends RectEntity<PlayerProps> {
     newY = Renderer.constrain(
       newY,
       0 + this.height / 2,
-      Renderer.scaler.gameSize.height - this.height / 2
+      Renderer.gameHeight - this.height / 2
     );
 
     Body.setPosition(this.body, {
@@ -83,6 +83,15 @@ export class Player extends RectEntity<PlayerProps> {
         this.move(-1);
       } else if (Renderer.keyCode === Renderer.DOWN_ARROW) {
         this.move(1);
+      }
+    }
+
+    if (Renderer.mouseIsPressed) {
+      if (Renderer.gameMouseY > this.position.y) {
+        this.move(1);
+      }
+      if (Renderer.gameMouseY < this.position.y) {
+        this.move(-1);
       }
     }
   }
