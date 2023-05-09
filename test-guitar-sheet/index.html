@@ -93,14 +93,9 @@
           };
 
       (async function () {
-        const blobURL = await fetch("./canon.gp")
-          .then((res) => res.blob())
-          .then((blob) => {
-            return window.URL.createObjectURL(blob);
-          });
         // initialize alphatab
         const settings = {
-          file: blobURL,
+          file: "./canon.gp",
           player: {
             enablePlayer: true,
             soundFont:
@@ -151,6 +146,7 @@
 
         api.soundFontLoad.on((e) => {
           const percentage = Math.floor((e.loaded / e.total) * 100);
+          console.log("percentage", percentage);
           emitEventToApp({
             event: "onSoundFontLoad",
             payload: { percentage },
