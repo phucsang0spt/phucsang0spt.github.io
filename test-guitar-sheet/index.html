@@ -104,6 +104,7 @@
           },
         };
         const api = new alphaTab.AlphaTabApi(main, settings);
+        window.hashTracks = {};
         window.sheetEngine = api;
 
         api.renderStarted.on(() => {
@@ -123,30 +124,31 @@
           });
         });
 
-        // api.renderTracks([track]);
-        //     api.countInVolume = 1;
-        //     api.metronomeVolume = 1;
+        //   api.countInVolume = 1;
+        //   api.metronomeVolume = 1;
         //   api.isLooping = loop.classList.contains("active");
 
-        //       api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
-        //       api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
-        //   api.updateSettings();
-        //   api.render();
+        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
+        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
 
         api.scoreLoaded.on((score) => {
+          window.hashTracks = {};
           emitEventToApp({
             event: "onScoreLoaded",
             payload: {
               title: score.title,
               artist: score.artist,
-              tracks: score.tracks.map((track) => trackToJSON(track)),
+              tracks: score.tracks.map((track) => {
+                const obj = trackToJSON(track);
+                hashTracks[obj.id] = track;
+                return obj;
+              }),
             },
           });
         });
 
         api.soundFontLoad.on((e) => {
           const percentage = Math.floor((e.loaded / e.total) * 100);
-          console.log("percentage", percentage);
           emitEventToApp({
             event: "onSoundFontLoad",
             payload: { percentage },
