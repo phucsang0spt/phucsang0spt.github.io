@@ -5,6 +5,7 @@
     <title>AlphaTab Tutorial</title>
     <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script>
     <script src="https://kit.fontawesome.com/b43f0e512e.js"></script>
+    <script src="debounce.min.js"></script>
     <style type="text/css">
       body {
         font-family: Arial, Helvetica, sans-serif;
@@ -167,10 +168,17 @@
           });
         });
 
-        api.playerPositionChanged.on((e) => {
+        const emitOnPlayerPositionChanged = _.throttle((payload) => {
           emitEventToApp({
             event: "onPlayerPositionChanged",
-            payload: { currentTime: e.currentTime, endTime: e.endTime },
+            payload,
+          });
+        }, 10);
+
+        api.playerPositionChanged.on((e) => {
+          emitOnPlayerPositionChanged({
+            currentTime: e.currentTime,
+            endTime: e.endTime,
           });
         });
       })();
