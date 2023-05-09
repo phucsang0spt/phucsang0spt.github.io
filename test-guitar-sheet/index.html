@@ -92,86 +92,90 @@
             console.log("emit to app noop");
           };
 
-      // initialize alphatab
-      const settings = {
-        file: "./canon.gp",
-        player: {
-          enablePlayer: true,
-          soundFont:
-            "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
-          scrollElement: wrapper.querySelector(".at-viewport"),
-        },
-      };
-      const api = new alphaTab.AlphaTabApi(main, settings);
-      window.sheetEngine = api;
+      (async function () {
+        const blobURL = await fetch("./canon.gp")
+          .then((res) => res.blob())
+          .then((blob) => {
+            return window.URL.createObjectURL(blob);
+          });
+        // initialize alphatab
+        const settings = {
+          file: blobURL,
+          player: {
+            enablePlayer: true,
+            soundFont:
+              "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
+            scrollElement: wrapper.querySelector(".at-viewport"),
+          },
+        };
+        const api = new alphaTab.AlphaTabApi(main, settings);
+        window.sheetEngine = api;
 
-      // api.playPause();
-      // api.stop();
-
-      api.renderStarted.on(() => {
-        loader.style.display = "flex";
-        emitEventToApp({
-          event: "onRenderStarted",
-          payload: {
+        api.renderStarted.on(() => {
+          loader.style.display = "flex";
+          emitEventToApp({
+            event: "onRenderStarted",
+            payload: {
+              runningTracks: api.tracks.map((track) => trackToJSON(track)),
+            },
+          });
+        });
+        api.renderFinished.on(() => {
+          loader.style.display = "none";
+          emitEventToApp({
+            event: "onRenderFinished",
             runningTracks: api.tracks.map((track) => trackToJSON(track)),
-          },
+          });
         });
-      });
-      api.renderFinished.on(() => {
-        loader.style.display = "none";
-        emitEventToApp({
-          event: "onRenderFinished",
-          runningTracks: api.tracks.map((track) => trackToJSON(track)),
-        });
-      });
 
-      // api.renderTracks([track]);
-      //     api.countInVolume = 1;
-      //     api.metronomeVolume = 1;
-      //   api.isLooping = loop.classList.contains("active");
+        // api.renderTracks([track]);
+        //     api.countInVolume = 1;
+        //     api.metronomeVolume = 1;
+        //   api.isLooping = loop.classList.contains("active");
 
-      //       api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
-      //       api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
-      //   api.updateSettings();
-      //   api.render();
+        //       api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
+        //       api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
+        //   api.updateSettings();
+        //   api.render();
 
-      api.scoreLoaded.on((score) => {
-        emitEventToApp({
-          event: "onScoreLoaded",
-          payload: {
-            title: score.title,
-            artist: score.artist,
-            tracks: score.tracks.map((track) => trackToJSON(track)),
-          },
+        api.scoreLoaded.on((score) => {
+          emitEventToApp({
+            event: "onScoreLoaded",
+            payload: {
+              title: score.title,
+              artist: score.artist,
+              tracks: score.tracks.map((track) => trackToJSON(track)),
+            },
+          });
         });
-      });
 
-      api.soundFontLoad.on((e) => {
-        const percentage = Math.floor((e.loaded / e.total) * 100);
-        emitEventToApp({
-          event: "onSoundFontLoad",
-          payload: { percentage },
+        api.soundFontLoad.on((e) => {
+          const percentage = Math.floor((e.loaded / e.total) * 100);
+          emitEventToApp({
+            event: "onSoundFontLoad",
+            payload: { percentage },
+          });
         });
-      });
-      api.playerReady.on(() => {
-        emitEventToApp({
-          event: "onPlayerReady",
+        api.playerReady.on(() => {
+          emitEventToApp({
+            event: "onPlayerReady",
+          });
         });
-      });
 
-      api.playerStateChanged.on((e) => {
-        emitEventToApp({
-          event: "onPlayerStateChanged",
-          payload: { state: e.state },
+        api.playerStateChanged.on((e) => {
+          emitEventToApp({
+            event: "onPlayerStateChanged",
+            payload: { state: e.state },
+          });
         });
-      });
 
-      api.playerPositionChanged.on((e) => {
-        emitEventToApp({
-          event: "onPlayerPositionChanged",
-          payload: { currentTime: e.currentTime, endTime: e.endTime },
+        api.playerPositionChanged.on((e) => {
+          emitEventToApp({
+            event: "onPlayerPositionChanged",
+            payload: { currentTime: e.currentTime, endTime: e.endTime },
+          });
         });
-      });
+      })();
     </script>
   </body>
 </html>
