@@ -82,6 +82,7 @@
       const wrapper = document.querySelector(".at-wrap");
       const main = wrapper.querySelector(".at-main");
       const loader = document.getElementById("loader");
+      const viewport = wrapper.querySelector(".at-viewport");
 
       window.emitEventToApp = window.ReactNativeWebView
         ? function (obj) {
@@ -93,19 +94,31 @@
             console.log("emit to app noop");
           };
 
-      (async function () {
+      const emitOnPlayerPositionChanged = _.throttle((payload) => {
+        emitEventToApp({
+          event: "onPlayerPositionChanged",
+          payload,
+        });
+      }, 10);
+
+      async function bootstrap(data) {
+        window.hashTracks = {};
+
+        if (window.sheetEngine) {
+          window.sheetEngine.stop();
+          window.sheetEngine.destroyPlayer();
+          window.sheetEngine = undefined;
+        }
         // initialize alphatab
-        const settings = {
-          file: "./canon.gp",
+        const api = new alphaTab.AlphaTabApi(main, {
+          file: data,
           player: {
             enablePlayer: true,
-            soundFont:
-              "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
-            scrollElement: wrapper.querySelector(".at-viewport"),
+            soundFont: "./sonivox.sf2",
+            scrollElement: viewport,
           },
-        };
-        const api = new alphaTab.AlphaTabApi(main, settings);
-        window.hashTracks = {};
+        });
+
         window.sheetEngine = api;
 
         api.renderStarted.on(() => {
@@ -168,20 +181,13 @@
           });
         });
 
-        const emitOnPlayerPositionChanged = _.throttle((payload) => {
-          emitEventToApp({
-            event: "onPlayerPositionChanged",
-            payload,
-          });
-        }, 10);
-
         api.playerPositionChanged.on((e) => {
           emitOnPlayerPositionChanged({
             currentTime: e.currentTime,
             endTime: e.endTime,
           });
         });
-      })();
+      }
     </script>
   </body>
 </html>
