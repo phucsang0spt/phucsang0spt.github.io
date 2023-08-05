@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <title>AlphaTab Tutorial</title>
-    <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script> -->
+    <script src="core.js"></script>
     <script src="https://kit.fontawesome.com/b43f0e512e.js"></script>
     <script src="debounce.min.js"></script>
     <style type="text/css">
@@ -25,14 +26,84 @@
         max-height: 100%;
       }
 
-      .at-cursor-bar {
+      .at-main {
+        pointer-events: all;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+      }
+
+      .at-cursor-bar:not(.range-mode) {
         /* Defines the color of the bar background when a bar is played */
         background: rgba(255, 242, 0, 0.25);
       }
 
-      .at-selection div {
+      .track-bar {
+        background-color: #27ae60;
+        width: 1.5px;
+        height: 100%;
+        z-index: 2;
+      }
+
+      /* .timebar {
+        position: absolute;
+        background-color: #27ae60;
+        width: 1.5px;
+        height: 100%;
+        top: 0;
+        cursor: pointer;
+      }
+
+      .timebar:first-child {
+        left: 0;
+        transform: translateX(-100%);
+      }
+
+      .timebar:last-child {
+        right: 0;
+      } */
+
+      /*
+      .timebar::before {
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 50%;
+        width: 0px;
+        height: 0px;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 8px solid #27ae60;
+        border-bottom: 8px solid transparent;
+        transform: translateX(calc(-50% - 0.3px));
+      }
+      .timebar::after {
+        position: absolute;
+        content: "";
+        bottom: 0;
+        left: 50%;
+        width: 0px;
+        height: 0px;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-bottom: 8px solid #27ae60;
+        border-top: 8px solid transparent;
+        transform: translateX(calc(-50% - 0.3px));
+      }
+
+      */
+      .at-surface.highlight > div:nth-child(n + 4):nth-last-child(n + 3) {
+        /* border: 2px solid rgba(56, 68, 234, 0.763); */
+        background-color: #7fbafd15;
+      }
+      .at-selection > div {
         /* Defines the color of the selection background */
-        background: rgba(64, 64, 255, 0.1);
+        background-color: #27ae5f69;
+        position: relative;
       }
 
       .at-cursor-beat {
@@ -62,6 +133,9 @@
   </head>
 
   <body>
+    <!-- <template id="tl_timebar">
+      <div class="timebar"></div>
+    </template> -->
     <div class="at-wrap">
       <div class="at-viewport">
         <div class="at-main"></div>
@@ -72,17 +146,90 @@
     </div>
 
     <script type="text/javascript">
+      // load elements
+      const wrapper = document.querySelector(".at-wrap");
+      const main = wrapper.querySelector(".at-main");
+      const loader = document.getElementById("loader");
+      const viewport = wrapper.querySelector(".at-viewport");
+
       function trackToJSON(track) {
         return {
           id: track.index,
           name: track.name,
         };
       }
-      // load elements
-      const wrapper = document.querySelector(".at-wrap");
-      const main = wrapper.querySelector(".at-main");
-      const loader = document.getElementById("loader");
-      const viewport = wrapper.querySelector(".at-viewport");
+
+      function genTrackBar() {
+        const runBar = main.querySelectorAll(".at-cursor-beat")[0];
+        const clone = runBar.cloneNode();
+        clone.setAttribute("class", "track-bar");
+        runBar.parentElement.appendChild(clone);
+
+        return clone;
+      }
+
+      function clearPlaybackRange() {
+        const sheetEngine = window.sheetEngine;
+        sheetEngine.clickTrack = {};
+        sheetEngine.playbackRange = null;
+        // clear all bar
+        const bars = main.querySelectorAll(".track-bar");
+        bars.forEach((bar) => bar.remove());
+      }
+
+      function onRangeMode() {
+        const atCursor = main.querySelector(".at-cursors");
+        const surface = main.querySelector(".at-surface");
+        window.sheetEngine.createRangeMode = true;
+        surface.classList.add("highlight");
+        atCursor.querySelector(".at-cursor-bar").classList.add("range-mode");
+        emitEventToApp({
+          event: "onRangeModeChanged",
+          payload: true,
+        });
+      }
+
+      function offRangeMode() {
+        const atCursor = main.querySelector(".at-cursors");
+        const surface = main.querySelector(".at-surface");
+        window.sheetEngine.createRangeMode = false; // set flag off
+
+        // off range mode style
+        surface.classList.remove("highlight");
+        atCursor.querySelector(".at-cursor-bar").classList.remove("range-mode");
+        clearPlaybackRange();
+
+        //
+        emitEventToApp({
+          event: "onRangeModeChanged",
+          payload: false,
+        });
+      }
+
+      function toggleRangeMode() {
+        window.sheetEngine.pause();
+        if (!window.sheetEngine.createRangeMode) {
+          onRangeMode();
+        } else {
+          offRangeMode();
+        }
+      }
+
+      function replaySheet() {
+        // off range mode before reset
+        offRangeMode();
+        window.sheetEngine.player.timePosition = 0;
+        window.sheetEngine.updateSettings();
+        window.sheetEngine.render();
+      }
+
+      function toggleVolume() {
+        window.sheetEngine.masterVolume = +!window.sheetEngine.masterVolume; // 1 | 0;
+        emitEventToApp({
+          event: "onMuteChanged",
+          payload: !window.sheetEngine.masterVolume,
+        });
+      }
 
       window.emitEventToApp = window.ReactNativeWebView
         ? function (obj) {
@@ -118,7 +265,13 @@
             scrollElement: viewport,
           },
         });
+        api.settings.display.scale = 2;
 
+        api.isLooping = true;
+        api.playbackRange = null;
+        api.totalTick = null;
+        api.clickTrack = { left: null, right: null };
+        api.createRangeMode = false;
         window.sheetEngine = api;
 
         api.renderStarted.on(() => {
@@ -181,12 +334,62 @@
           });
         });
 
+        api.beatMouseDown.on((e) => {
+          api.clicked = true;
+        });
+
+        function handleClickLine(tick) {
+          if (!api.createRangeMode) {
+            return;
+          }
+          api.pause();
+
+          if (!api.clickTrack.left) {
+            // set left bar
+            const bar = genTrackBar();
+            const track = { tick, el: bar };
+            api.clickTrack.left = track;
+          } else {
+            if (!api.clickTrack.right) {
+              // set right bar
+              const bar = genTrackBar();
+              const track = { tick, el: bar };
+              api.clickTrack.right = track;
+
+              if (api.clickTrack.left.tick > api.clickTrack.right.tick) {
+                // revert correct order
+                [api.clickTrack.right.tick, api.clickTrack.left.tick] = [
+                  api.clickTrack.left.tick,
+                  api.clickTrack.right.tick,
+                ];
+              }
+              // complete range
+              api.playbackRange = {
+                startTick: api.clickTrack.left.tick - 1,
+                endTick: api.clickTrack.right.tick + 250,
+              };
+            } else {
+              clearPlaybackRange();
+            }
+          }
+        }
+
         api.playerPositionChanged.on((e) => {
+          if (e.isSeek && api.clicked) {
+            console.log(e);
+            handleClickLine(e.currentTick);
+            api.clicked = false;
+          }
           emitOnPlayerPositionChanged({
             currentTime: e.currentTime,
             endTime: e.endTime,
           });
         });
+      }
+
+      const [, flag] = window.location.hash?.split("#");
+      if (flag === "debug") {
+        bootstrap("./canon.gp");
       }
     </script>
   </body>
