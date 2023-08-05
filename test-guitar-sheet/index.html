@@ -156,6 +156,7 @@
         return {
           id: track.index,
           name: track.name,
+          isMute: track.playbackInfo.volume === 0,
         };
       }
 
@@ -223,12 +224,31 @@
         window.sheetEngine.render();
       }
 
-      function toggleVolume() {
-        window.sheetEngine.masterVolume = +!window.sheetEngine.masterVolume; // 1 | 0;
+      function playTrack(id) {
+        const track = window.hashTracks[id];
+        window.sheetEngine.renderTracks([track]);
+        window.sheetEngine.masterVolume = !!track.playbackInfo.volume;
+      }
+
+      function toggleTrackVolume(id) {
+        const track = window.hashTracks[id];
+        if (track.playbackInfo.volume !== 0) {
+          track.playbackInfo.volume = 0;
+        } else {
+          track.playbackInfo.volume = track.playbackInfo.originalVolume;
+        }
         emitEventToApp({
-          event: "onMuteChanged",
-          payload: !window.sheetEngine.masterVolume,
+          event: "onTrackMuteChanged",
+          payload: {
+            id: id,
+            mute: !track.playbackInfo.volume,
+          },
         });
+        const currentTrack = window.sheetEngine.tracks[0];
+        if (currentTrack.id === id) {
+          // update volume to current playing track
+          window.sheetEngine.masterVolume = +!!track.playbackInfo.volume;
+        }
       }
 
       window.emitEventToApp = window.ReactNativeWebView
@@ -237,9 +257,7 @@
               `event::${JSON.stringify(obj)}`
             );
           }
-        : function () {
-            console.log("emit to app noop");
-          };
+        : function noop() {};
 
       const emitOnPlayerPositionChanged = _.throttle((payload) => {
         emitEventToApp({
@@ -306,6 +324,8 @@
               title: score.title,
               artist: score.artist,
               tracks: score.tracks.map((track) => {
+                track.id = track.index;
+                track.playbackInfo.originalVolume = track.playbackInfo.volume;
                 const obj = trackToJSON(track);
                 hashTracks[obj.id] = track;
                 return obj;
@@ -376,7 +396,6 @@
 
         api.playerPositionChanged.on((e) => {
           if (e.isSeek && api.clicked) {
-            console.log(e);
             handleClickLine(e.currentTick);
             api.clicked = false;
           }
