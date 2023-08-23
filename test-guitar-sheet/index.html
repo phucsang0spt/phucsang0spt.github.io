@@ -144,8 +144,19 @@
         return {
           id: track.index,
           name: track.name,
-          isMute: track.playbackInfo.volume === 0,
+          isMute: getTrackMuteState(track),
         };
+      }
+
+      function getTrackMuteState(track) {
+        if (track.playbackInfo.isOn) {
+          return false; // currently not mute yet
+        }
+        return true;
+      }
+
+      function onOffTrack(track) {
+        window.sheetEngine.changeTrackMute([track], getTrackMuteState(track)); // mute or on track
       }
 
       async function genTrackBar() {
@@ -237,28 +248,19 @@
         offRangeMode();
         const track = window.hashTracks[id];
         window.sheetEngine.renderTracks([track]);
-        window.sheetEngine.masterVolume = !!track.playbackInfo.volume;
       }
 
       function toggleTrackVolume(id) {
         const track = window.hashTracks[id];
-        if (track.playbackInfo.volume !== 0) {
-          track.playbackInfo.volume = 0;
-        } else {
-          track.playbackInfo.volume = track.playbackInfo.originalVolume;
-        }
+        track.playbackInfo.isOn = !track.playbackInfo.isOn;
         emitEventToApp({
           event: "onTrackMuteChanged",
           payload: {
             id: id,
-            mute: !track.playbackInfo.volume,
+            mute: getTrackMuteState(track),
           },
         });
-        const currentTrack = window.sheetEngine.tracks[0];
-        if (currentTrack.id === id) {
-          // update volume to current playing track
-          window.sheetEngine.masterVolume = +!!track.playbackInfo.volume;
-        }
+        onOffTrack(track);
       }
 
       window.emitEventToApp = window.ReactNativeWebView
@@ -381,11 +383,10 @@
         api.renderFinished.on(() => {
           loader.style.display = "none";
           api.trackTickList = api._tickCache.masterBars;
-          const runningTracks = api.tracks.map((track) => trackToJSON(track));
-          window.sheetEngine.masterVolume = +!runningTracks[0].isMute;
+          onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
-            runningTracks,
+            runningTracks: api.tracks.map((track) => trackToJSON(track)),
           });
         });
 
@@ -405,8 +406,7 @@
               artist: score.artist,
               tracks: score.tracks.map((track) => {
                 track.id = track.index;
-                track.playbackInfo.originalVolume =
-                  track.playbackInfo.volume || 1;
+                track.playbackInfo.isOn = true;
                 const obj = trackToJSON(track);
                 hashTracks[obj.id] = track;
                 return obj;
@@ -451,10 +451,13 @@
         });
       }
 
-      const [, flag] = window.location.hash?.split("#");
-      if (flag === "debug") {
-        bootstrap("./canon.gp5");
-      }
+      setTimeout(() => {
+        const [, flag] = window.location.hash?.split("#");
+        if (flag === "debug") {
+          console.log("bootstrap called by debug");
+          bootstrap("./canon.gp");
+        }
+      }, 0);
     </script>
   </body>
 </html>
