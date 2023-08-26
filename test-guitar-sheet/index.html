@@ -198,8 +198,10 @@
       }
 
       function onRangeMode() {
+
         const atCursor = main.querySelector(".at-cursors");
         const surface = main.querySelector(".at-surface");
+        window.sheetEngine.isLooping = true;
         window.sheetEngine.createRangeMode = true;
         surface.classList.add("highlight");
         atCursor.querySelector(".at-cursor-bar").classList.add("range-mode");
@@ -212,6 +214,7 @@
       function offRangeMode() {
         const atCursor = main.querySelector(".at-cursors");
         const surface = main.querySelector(".at-surface");
+        window.sheetEngine.isLooping = false;
         window.sheetEngine.createRangeMode = false; // set flag off
 
         // off range mode style
@@ -297,7 +300,7 @@
         });
         api.settings.display.scale = 2;
 
-        api.isLooping = true;
+        api.isLooping = false;
         api.playbackRange = null;
         api.totalTick = null;
         api.clickTrack = { left: null, right: null };
