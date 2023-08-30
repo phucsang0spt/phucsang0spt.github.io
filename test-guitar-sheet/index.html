@@ -198,7 +198,6 @@
       }
 
       function onRangeMode() {
-
         const atCursor = main.querySelector(".at-cursors");
         const surface = main.querySelector(".at-surface");
         window.sheetEngine.isLooping = true;
@@ -435,6 +434,18 @@
           emitEventToApp({
             event: "onPlayerStateChanged",
             payload: { state: e.state },
+          });
+        });
+
+        api.activeBeatsChanged.on((e) => {
+          const currentBeat = e.activeBeats[0];
+          const signal = currentBeat.notes.map((note) => ({
+            key: note.string,
+            value: note.fret,
+          }));
+          emitEventToApp({
+            event: "onActiveBeatChanged",
+            payload: { signal },
           });
         });
 
