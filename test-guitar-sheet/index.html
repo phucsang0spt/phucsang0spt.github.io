@@ -140,6 +140,10 @@
       const loader = document.getElementById("loader");
       const viewport = wrapper.querySelector(".at-viewport");
 
+      function ticksToMillis(ticks, tempo) {
+        return (ticks * (60000.0 / (tempo * 960))) | 0;
+      }
+
       function trackToJSON(track) {
         return {
           id: track.index,
@@ -289,6 +293,8 @@
           window.sheetEngine = undefined;
         }
         // initialize alphatab
+        const HarmonicType = alphaTab.model.HarmonicType;
+        const BendType = alphaTab.model.BendType;
         const api = new alphaTab.AlphaTabApi(main, {
           file: data,
           player: {
@@ -297,14 +303,22 @@
             scrollElement: viewport,
           },
         });
-        api.settings.display.scale = 2;
 
+        //   api.countInVolume = 1;
+        //   api.metronomeVolume = 1;
+        //   api.isLooping = loop.classList.contains("active");
+
+        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
+        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
+
+        api.settings.display.scale = 2;
         api.isLooping = false;
         api.playbackRange = null;
         api.totalTick = null;
         api.clickTrack = { left: null, right: null };
         api.createRangeMode = false;
         api.trackTickList = [];
+        api.lastTimePosition = 0;
         window.sheetEngine = api;
 
         function findEndTick(tick, minTick = -1) {
@@ -373,6 +387,31 @@
           }
         }
 
+        function onBeatChange(beat, isLost) {
+          const signal = beat.notes.map((note) => ({
+            key: note.string,
+            value: note.fret,
+            effect: [
+              0, //8
+              note.isTapped ? 4 : 0, //9
+              note.bendType === BendType.None
+                ? 0
+                : note.bendType === BendType.PrebendRelease
+                ? 1
+                : 2, //10
+              note.isPalmMute ? 8 : 0, //11
+              note.harmonicType === HarmonicType.None ? 0 : 3, //12
+              beat.isPalmMute ? 8 : 0, //13
+              note.isDead ? 1 : 0, //14
+              0, // 15
+            ],
+          }));
+          // console.log("send beat", beat, signal);
+          emitEventToApp({
+            event: "onPlayedBeatChanged",
+            payload: { signal },
+          });
+        }
         api.renderStarted.on(() => {
           loader.style.display = "flex";
           emitEventToApp({
@@ -385,19 +424,16 @@
         api.renderFinished.on(() => {
           loader.style.display = "none";
           api.trackTickList = api._tickCache.masterBars;
+          api.lastTimePosition = api.timePosition;
+          api.lostBeatTimeCount = 0;
+          api.lostBeatStack = [];
+          api.baseBeat = null;
           onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
             runningTracks: api.tracks.map((track) => trackToJSON(track)),
           });
         });
-
-        //   api.countInVolume = 1;
-        //   api.metronomeVolume = 1;
-        //   api.isLooping = loop.classList.contains("active");
-
-        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
-        //   api.settings.display.layoutMode = alphaTab.LayoutMode.Page;
 
         api.scoreLoaded.on((score) => {
           window.hashTracks = {};
@@ -437,16 +473,46 @@
           });
         });
 
-        api.activeBeatsChanged.on((e) => {
-          const currentBeat = e.activeBeats[0];
-          const signal = currentBeat.notes.map((note) => ({
-            key: note.string,
-            value: note.fret,
-          }));
-          emitEventToApp({
-            event: "onActiveBeatChanged",
-            payload: { signal },
-          });
+        function handleBeatTime(currentTime) {
+          if (api.baseBeat) {
+            for (const beat of api.lostBeatStack) {
+              const startTick = beat.displayStart - api.baseBeat.displayStart;
+              const startTime =
+                ticksToMillis(startTick, api.score.tempo) / api.playbackSpeed;
+              if (currentTime >= startTime) {
+                onBeatChange(beat, true);
+                // remove it after run
+                api.lostBeatStack = api.lostBeatStack.filter(
+                  (lost) => lost !== beat
+                );
+              }
+            }
+          }
+        }
+
+        api.playedBeatChanged.on(() => {
+          const { nextBeatLookup, currentBeat } = api._currentBeat;
+          const isSameNextBeat =
+            nextBeatLookup?.beat?.id === currentBeat.nextBeat.id;
+          const nextBeatId =
+            nextBeatLookup?.beat?.id ?? currentBeat.nextBeat.id;
+
+          const delta = nextBeatId - currentBeat.id;
+          if (!isSameNextBeat && delta > 1) {
+            // run lost beats
+            api.lostBeatTimeCount = 0;
+            const nextBeats = [];
+            let iBeat = currentBeat;
+            Array.from({ length: delta - 1 }).forEach((_) => {
+              iBeat = iBeat.nextBeat;
+              nextBeats.push(iBeat);
+            });
+            api.baseBeat = currentBeat;
+            api.lostBeatStack = nextBeats;
+            onBeatChange(currentBeat);
+          } else {
+            onBeatChange(currentBeat);
+          }
         });
 
         api.beatMouseDown.on((e) => {
@@ -458,6 +524,12 @@
             handleClickLine(e.currentTick);
             api.clicked = false;
           }
+          const delta = api.timePosition - api.lastTimePosition;
+          api.lastTimePosition = api.timePosition;
+
+          api.lostBeatTimeCount += delta;
+          handleBeatTime(api.lostBeatTimeCount);
+
           emitOnPlayerPositionChanged({
             currentTime: e.currentTime,
             endTime: e.endTime,
@@ -469,7 +541,14 @@
         const [, flag] = window.location.hash?.split("#");
         if (flag === "debug") {
           console.log("bootstrap called by debug");
-          bootstrap("./canon.gp");
+          bootstrap("./walk.gp5");
+          setTimeout(() => {
+            window.sheetEngine.playbackSpeed = 0.1;
+            playTrack(2);
+            setTimeout(() => {
+              // toggleRangeMode();
+            }, 100);
+          }, 100);
         }
       }, 0);
     </script>
