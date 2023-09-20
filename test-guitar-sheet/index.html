@@ -321,32 +321,6 @@
         api.lastTimePosition = 0;
         window.sheetEngine = api;
 
-        function findEndTick(tick, minTick = -1) {
-          for (const bar of api.trackTickList) {
-            // find bar match tick
-            if (bar.start <= tick && tick <= bar.end) {
-              // find beat match tick
-              const beat = bar.beats.find((beat, index) => {
-                if (beat.start <= minTick) {
-                  return false;
-                }
-                // sometime beat.end not correct that why we use "start" of bar.beats[index + 1]
-                let endBeat = bar.beats[index + 1]?.start ?? beat.end;
-
-                // ???
-                if (endBeat === beat.start) {
-                  endBeat = beat.end;
-                }
-                return beat.start <= tick && tick <= endBeat;
-              });
-              if (beat) {
-                return beat.end;
-              }
-            }
-          }
-          return null; // not found end tick
-        }
-
         async function handleClickLine(tick) {
           if (!api.createRangeMode) {
             return;
@@ -355,14 +329,16 @@
 
           if (!api.clickTrack.left) {
             // set left bar
+            const tickDuration = api._currentBeat.tickDuration;
             const bar = await genTrackBar();
-            const track = { tick, el: bar };
+            const track = { tick, el: bar, tickDuration };
             api.clickTrack.left = track;
           } else {
+            // set right bar
             if (!api.clickTrack.right) {
-              // set right bar
+              const tickDuration = api._currentBeat.tickDuration;
               const bar = await genTrackBar();
-              const track = { tick, el: bar };
+              const track = { tick, el: bar, tickDuration };
               api.clickTrack.right = track;
 
               if (api.clickTrack.left.tick > api.clickTrack.right.tick) {
@@ -376,10 +352,9 @@
               api.playbackRange = {
                 startTick: api.clickTrack.left.tick - 1,
                 endTick:
-                  findEndTick(
-                    api.clickTrack.right.tick,
-                    api.clickTrack.left.tick
-                  ) ?? api.clickTrack.right.tick,
+                  api.clickTrack.right.tick +
+                  api.clickTrack.right.tickDuration -
+                  1,
               };
             } else {
               clearPlaybackRange();
@@ -546,7 +521,7 @@
             window.sheetEngine.playbackSpeed = 0.1;
             playTrack(2);
             setTimeout(() => {
-              // toggleRangeMode();
+              toggleRangeMode();
             }, 100);
           }, 100);
         }
