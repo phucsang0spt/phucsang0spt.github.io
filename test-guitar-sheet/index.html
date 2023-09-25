@@ -329,16 +329,18 @@
 
           if (!api.clickTrack.left) {
             // set left bar
-            const tickDuration = api._currentBeat.tickDuration;
+            const displayDuration =
+              api._currentBeat.currentBeat.displayDuration;
             const bar = await genTrackBar();
-            const track = { tick, el: bar, tickDuration };
+            const track = { tick, el: bar, displayDuration };
             api.clickTrack.left = track;
           } else {
             // set right bar
             if (!api.clickTrack.right) {
-              const tickDuration = api._currentBeat.tickDuration;
+              const displayDuration =
+                api._currentBeat.currentBeat.displayDuration;
               const bar = await genTrackBar();
-              const track = { tick, el: bar, tickDuration };
+              const track = { tick, el: bar, displayDuration };
               api.clickTrack.right = track;
 
               if (api.clickTrack.left.tick > api.clickTrack.right.tick) {
@@ -353,7 +355,7 @@
                 startTick: api.clickTrack.left.tick - 1,
                 endTick:
                   api.clickTrack.right.tick +
-                  api.clickTrack.right.tickDuration -
+                  api.clickTrack.right.displayDuration -
                   1,
               };
             } else {
@@ -362,24 +364,39 @@
           }
         }
 
+        function getNoteEffect(note) {
+          if (note.isTapped) {
+            return 4;
+          }
+          if (note.bendType !== BendType.None) {
+            if (note.bendType === BendType.PrebendRelease) {
+              return 1;
+            } else {
+              return 2;
+            }
+          }
+          if (note.isPalmMute) {
+            return 8;
+          }
+          if (note.harmonicType !== HarmonicType.None) {
+            return 3;
+          }
+          if (note.isDead) {
+            return 1;
+          }
+          return 0;
+        }
+
+        // 6弦⇔1弦、5弦⇔2弦、4弦⇔3弦、3弦⇔4弦、2弦⇔5弦、１弦⇔６弦への修正
+        const convertValues = (value) =>
+          ({ 1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1 }[value] || value);
+
         function onBeatChange(beat, isLost) {
           const signal = beat.notes.map((note) => ({
-            key: note.string,
+            key: convertValues(note.string),
             value: note.fret,
-            effect: [
-              0, //8
-              note.isTapped ? 4 : 0, //9
-              note.bendType === BendType.None
-                ? 0
-                : note.bendType === BendType.PrebendRelease
-                ? 1
-                : 2, //10
-              note.isPalmMute ? 8 : 0, //11
-              note.harmonicType === HarmonicType.None ? 0 : 3, //12
-              beat.isPalmMute ? 8 : 0, //13
-              note.isDead ? 1 : 0, //14
-              0, // 15
-            ],
+            effect: getNoteEffect(note),
+            isDead: note.isDead,
           }));
           // console.log("send beat", beat, signal);
           emitEventToApp({
@@ -466,6 +483,9 @@
         }
 
         api.playedBeatChanged.on(() => {
+          if (!api._currentBeat) {
+            return;
+          }
           const { nextBeatLookup, currentBeat } = api._currentBeat;
           const isSameNextBeat =
             nextBeatLookup?.beat?.id === currentBeat.nextBeat.id;
@@ -521,7 +541,7 @@
             window.sheetEngine.playbackSpeed = 0.1;
             playTrack(2);
             setTimeout(() => {
-              toggleRangeMode();
+              // toggleRangeMode();
             }, 100);
           }, 100);
         }
