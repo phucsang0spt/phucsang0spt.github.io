@@ -494,14 +494,26 @@
 
           const delta = nextBeatId - currentBeat.id;
           if (!isSameNextBeat && delta > 1) {
-            // run lost beats
+            // find lost beats
             api.lostBeatTimeCount = 0;
             const nextBeats = [];
             let iBeat = currentBeat;
-            Array.from({ length: delta - 1 }).forEach((_) => {
+
+            let iCount = 0;
+            const limit = 100; // to much lost beat ????
+            while (true) {
               iBeat = iBeat.nextBeat;
+              if (iBeat.id == nextBeatId) {
+                // stop find lost beat
+                break;
+              }
               nextBeats.push(iBeat);
-            });
+              iCount++;
+              if (iCount >= limit) {
+                // stop find lost beat
+                break;
+              }
+            }
             api.baseBeat = currentBeat;
             api.lostBeatStack = nextBeats;
             onBeatChange(currentBeat);
@@ -539,7 +551,7 @@
           bootstrap("./walk.gp5");
           setTimeout(() => {
             window.sheetEngine.playbackSpeed = 0.1;
-            playTrack(2);
+            playTrack(3);
             setTimeout(() => {
               // toggleRangeMode();
             }, 100);
