@@ -277,12 +277,18 @@
           }
         : function noop() {};
 
-      const emitOnPlayerPositionChanged = _.throttle((payload) => {
-        emitEventToApp({
-          event: "onPlayerPositionChanged",
-          payload,
-        });
-      }, 10);
+      const emitOnPlayerPositionChanged = _.throttle(
+        ({ api, currentTick, endTick }) => {
+          emitEventToApp({
+            event: "onPlayerPositionChanged",
+            payload: {
+              currentTime: ticksToMillis(currentTick, api.score.tempo),
+              endTime: ticksToMillis(endTick, api.score.tempo),
+            },
+          });
+        },
+        10
+      );
 
       async function bootstrap(data) {
         window.hashTracks = {};
@@ -351,12 +357,13 @@
                 ];
               }
               // complete range
+              // Normally endTick = api.clickTrack.right.tick + api.clickTrack.right.displayDuration - 1 but there some cases that next note was reached out. To prevent next note was not reached out, we munus 10 tick to endTick
               api.playbackRange = {
-                startTick: api.clickTrack.left.tick - 1,
+                startTick: api.clickTrack.left.tick + 1,
                 endTick:
                   api.clickTrack.right.tick +
                   api.clickTrack.right.displayDuration -
-                  1,
+                  10,
               };
             } else {
               clearPlaybackRange();
@@ -364,25 +371,27 @@
           }
         }
 
-        function getNoteEffect(note) {
-          if (note.isTapped) {
+        function getNoteEffect(beat, note) {
+          if (beat.tap) {
             return 4;
           }
           if (note.bendType !== BendType.None) {
-            if (note.bendType === BendType.PrebendRelease) {
-              return 1;
-            } else {
+            // BendTypeがReleaseもしくはPrebendReleaseのとき
+            if (
+              note.bendType === BendType.Release ||
+              note.bendType === BendType.PrebendRelease
+            ) {
               return 2;
+            } else {
+              // BendTypeがRelease、PrebendRelease以外のとき
+              return 1;
             }
           }
-          if (note.isPalmMute) {
+          if (!note.isDead && beat.isPalmMute) {
             return 8;
           }
           if (note.harmonicType !== HarmonicType.None) {
             return 3;
-          }
-          if (note.isDead) {
-            return 1;
           }
           return 0;
         }
@@ -391,17 +400,34 @@
         const convertValues = (value) =>
           ({ 1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1 }[value] || value);
 
+        function getHarmonicFret(note) {
+          return note.harmonicType === HarmonicType.None ? 0 : note.fret;
+        }
+
         function onBeatChange(beat, isLost) {
-          const signal = beat.notes.map((note) => ({
-            key: convertValues(note.string),
-            value: note.fret,
-            effect: getNoteEffect(note),
-            isDead: note.isDead,
-          }));
-          // console.log("send beat", beat, signal);
+          let summaryDeadFlag = beat.notes.length ? true : false;
+          // beat.notes[0].harmonicType = HarmonicType.Tap; // DEBUG
+          const isBeatHaveHarmonicType = beat.notes.some(
+            (note) => note.harmonicType !== HarmonicType.None
+          );
+          const signal = beat.notes.map((note) => {
+            summaryDeadFlag = summaryDeadFlag && note.isDead;
+            return {
+              key: convertValues(note.string),
+              // default value = note.fret
+              // if note is harmonic, value = getHarmonicFret(note)
+              // if note is dead, value = 255
+              value: isBeatHaveHarmonicType
+                ? getHarmonicFret(note)
+                : note.isDead
+                ? 255
+                : note.fret,
+              effect: getNoteEffect(beat, note),
+            };
+          });
           emitEventToApp({
             event: "onPlayedBeatChanged",
-            payload: { signal },
+            payload: { signal, isDead: summaryDeadFlag },
           });
         }
         api.renderStarted.on(() => {
@@ -420,6 +446,7 @@
           api.lostBeatTimeCount = 0;
           api.lostBeatStack = [];
           api.baseBeat = null;
+          api.lastPlayedBeat = null;
           onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
@@ -459,6 +486,7 @@
         });
 
         api.playerStateChanged.on((e) => {
+          api.lastPlayedBeat = null;
           emitEventToApp({
             event: "onPlayerStateChanged",
             payload: { state: e.state },
@@ -487,6 +515,11 @@
             return;
           }
           const { nextBeatLookup, currentBeat } = api._currentBeat;
+          if (api.lastPlayedBeat == currentBeat) {
+            // skip same beat
+            return;
+          }
+          api.lastPlayedBeat = currentBeat;
           const isSameNextBeat =
             nextBeatLookup?.beat?.id === currentBeat.nextBeat.id;
           const nextBeatId =
@@ -538,8 +571,9 @@
           handleBeatTime(api.lostBeatTimeCount);
 
           emitOnPlayerPositionChanged({
-            currentTime: e.currentTime,
-            endTime: e.endTime,
+            api,
+            currentTick: e.currentTick,
+            endTick: e.endTick,
           });
         });
       }
@@ -550,8 +584,8 @@
           console.log("bootstrap called by debug");
           bootstrap("./walk.gp5");
           setTimeout(() => {
-            window.sheetEngine.playbackSpeed = 0.1;
-            playTrack(3);
+            window.sheetEngine.playbackSpeed = 1;
+            playTrack(2);
             setTimeout(() => {
               // toggleRangeMode();
             }, 100);
