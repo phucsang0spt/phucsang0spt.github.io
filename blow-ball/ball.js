@@ -1,7 +1,11 @@
 class Ball extends BoardEntity {
-  constructor(x = 0, y = 0, color, size) {
+  isDead = false;
+
+  constructor(x = 0, y = 0, color, size, lifetime = 12) {
     super("comp-ball", x, y, size, size);
 
+    this.maxLifetime = lifetime * 1000;
+    this.lifetime = this.maxLifetime;
     this.radius = size / 2;
     this.sqrRadius = Math.pow(this.radius, 2);
     this.body.style.setProperty("--color", color);
@@ -17,6 +21,22 @@ class Ball extends BoardEntity {
     const ground = board.ground;
     if (this.isTouchedGround(ground)) {
       this.bounceByGround(ground);
+    }
+    const rect = this.rect;
+    if (rect.right < 0 || rect.top > board.h) {
+      this.isDead = true;
+    }
+    this.handleLifetime();
+  }
+
+  handleLifetime() {
+    this.lifetime -= board.deltaTime;
+    const rate = this.lifetime / this.maxLifetime;
+    if (rate < 0.3) {
+      this.opacity = rate;
+    }
+    if (this.lifetime < 0) {
+      this.isDead = true;
     }
   }
 
@@ -71,11 +91,10 @@ class Ball extends BoardEntity {
     if (willPushY) {
       if (this.vel.y > 0) {
         this.y = gRect.top - this.radius - 0.1;
-        this.addForce(0, -this.acc.y * 1.5);
+        this.addForce(0, -this.acc.y * 1.8);
       } else {
         // will not happen now
         this.y = gRect.bottom + this.radius + 0.1;
-        this.addForce(0, -this.acc.y * 1.5);
       }
     }
   }

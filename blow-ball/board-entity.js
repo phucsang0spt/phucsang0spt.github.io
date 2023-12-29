@@ -44,12 +44,15 @@ class BoardEntity extends PhysicEntity {
 
     board.appendChild(this.body);
 
+    this.opacity = 1;
     this.width = width;
     this.height = height;
 
     this.drawer = this.body.style.setProperty.bind(this.body.style);
 
     this.body.classList.add("board-entity");
+
+    this.drawer("--opacity", this.opacity);
     this.drawer("--x", this.x);
     this.drawer("--y", this.y);
     this.drawer("--width", width);
@@ -64,6 +67,7 @@ class BoardEntity extends PhysicEntity {
     // draw
     this.drawer("--x", this.x);
     this.drawer("--y", this.y);
+    this.drawer("--opacity", this.opacity);
   }
 
   destroy() {

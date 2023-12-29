@@ -7,7 +7,7 @@ class PhysicEntity {
     return obj;
   }
 
-  static G = 0.09;
+  static G = 0.3;
 
   vel = PhysicEntity.makeVector();
   acc = PhysicEntity.makeVector();

@@ -20,6 +20,7 @@
   function handleDown(e) {
     dragger.prevPointer = { x: e.clientX, y: e.clientY };
     dragger.captured = true;
+    disableScroll();
   }
   function handleMove(e) {
     if (!dragger.captured) {
@@ -37,7 +38,7 @@
     const styled = getComputedStyle(holder);
     const currY = +styled.getPropertyValue("--fan-dragger-y");
 
-    const newY = dragger.setPosition(currY + deltaY * 1.05);
+    const newY = dragger.setPosition(currY + deltaY * 1.1);
 
     dragger.prevPointer = {
       x: clientX,
@@ -47,6 +48,7 @@
     dragger.onDrag(newY / holderHeight);
   }
   function handleUp() {
+    enableScroll();
     dragger.prevPointer = undefined;
     dragger.captured = false;
   }
