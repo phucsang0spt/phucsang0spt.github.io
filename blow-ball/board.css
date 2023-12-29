@@ -1,0 +1,27 @@
+.board {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid #fff;
+}
+
+button.start {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 150px;
+  border: 1px solid #fff;
+  background-color: rgba(0, 0, 0, 0.5);
+
+  color: #39c;
+  font-size: 20px;
+  line-height: 20px;
+  text-align: center;
+  padding: 20px 0;
+
+  box-shadow: 0 0 5px 1px #fff inset;
+  text-shadow: 0 0 5px #39c;
+}

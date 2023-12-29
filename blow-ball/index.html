@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Blow Ball</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: content-box;
+      }
+      body {
+        touch-action: manipulation;
+        background-color: #292929;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .root {
+        user-select: none;
+        background-color: #191919;
+        min-width: calc(var(--root-w) * 1px);
+        width: calc(var(--root-w) * 1px);
+        height: calc(var(--root-h) * 1px);
+        transform: scale(var(--root-scale-x), var(--root-scale-y));
+
+        display: flex;
+      }
+
+      .right {
+        user-select: none;
+        width: 200px;
+        position: relative;
+      }
+    </style>
+    <link rel="stylesheet" href="./board.css" />
+    <link rel="stylesheet" href="./fan.css" />
+    <link rel="stylesheet" href="./fan-dragger.css" />
+    <link rel="stylesheet" href="./board-entity.css" />
+    <link rel="stylesheet" href="./goal.css" />
+    <link rel="stylesheet" href="./ground.css" />
+    <link rel="stylesheet" href="./ball.css" />
+  </head>
+  <body>
+    <div class="root">
+      <div id="board" class="board">
+        <template id="comp-ball">
+          <div class="ball">
+            <div class="ball-white"></div>
+          </div>
+        </template>
+
+        <template id="comp-ground">
+          <div id="ground" class="ground"></div>
+        </template>
+
+        <!-- <div id="goal" class="goal entity"></div> -->
+
+        <button id="start-button" class="start">Start</button>
+      </div>
+      <div class="right">
+        <div id="fan" class="fan">
+          <div class="fan-body">
+            <div id="fan-dragger-holder" class="fan-dragger-holder">
+              <div id="fan-dragger" class="fan-dragger">
+                <div class="fan-dragger-cover"></div>
+                <div class="fan-dragger-arrow"></div>
+              </div>
+            </div>
+          </div>
+          <img class="wings" src="./fan.png" />
+        </div>
+      </div>
+    </div>
+    <script src="./define.js"></script>
+    <script src="./size-calculating.js"></script>
+    <script src="./fan-dragger.js"></script>
+    <script src="./fan.js"></script>
+    <script src="./physic-entity.js"></script>
+    <script src="./board-entity.js"></script>
+    <script src="./ground.js"></script>
+    <script src="./ball.js"></script>
+    <script src="./board.js"></script>
+  </body>
+</html>

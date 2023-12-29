@@ -1,0 +1,55 @@
+.fan {
+  --min-fan-speed: 0;
+  --current-fan-speed: 0;
+  --max-fan-speed: 5;
+  position: relative;
+  margin-top: 100px;
+}
+
+.wings {
+  position: absolute;
+  top: 0;
+  width: 100px;
+  height: auto;
+  animation: spin calc(1 / var(--current-fan-speed) * 1s) linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotateY(70deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateY(70deg) rotateZ(359deg);
+  }
+}
+
+.fan-body {
+  position: absolute;
+  top: 42px;
+  left: 85px;
+  width: 20px;
+  height: 200px;
+  background-color: #8e44ad;
+}
+
+.fan-body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 20px;
+  width: 50px;
+  background-color: #8e44ad;
+}
+
+.fan-body::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 20px;
+  width: 100px;
+  background-color: #8e44ad;
+  transform: translate(-50%, 100%);
+  border-radius: 20px;
+}
