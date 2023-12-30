@@ -40,9 +40,9 @@
     );
     board.grounds.push(new Ground(board.w - 100, 300, 200, 5));
 
-    board.movingBoard = new Ground(200, 150, 5, 300);
-    board.movingBoard.g = 0;
-    board.grounds.push(board.movingBoard);
+    board.movingGround = new Ground(200, 150, 5, 300);
+    board.movingGround.g = 0;
+    board.grounds.push(board.movingGround);
   }
 
   function speedToWindForce(sp) {
@@ -95,16 +95,16 @@
       }
     }
 
-    const movingBoard = board.movingBoard;
+    const movingGround = board.movingGround;
     let dir = 0;
-    if (movingBoard.y <= -movingBoard.height / 2) {
+    if (movingGround.y <= -movingGround.height / 2) {
       dir = 2;
-      movingBoard.addForce(0, dir);
-    } else if (movingBoard.y >= movingBoard.height / 2) {
+      movingGround.addForce(0, dir);
+    } else if (movingGround.y >= movingGround.height / 2) {
       dir = -2;
-      movingBoard.addForce(0, dir);
+      movingGround.addForce(0, dir);
     }
-    movingBoard.loop();
+    movingGround.loop();
   }
 
   function loop() {

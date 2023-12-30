@@ -93,5 +93,9 @@ class Ball extends BoardEntity {
         this.addForce(0, -this.acc.y * 1.1);
       }
     }
+
+    if (ground === board.movingGround && (willPushX || willPushY)) {
+      window.touchSound.play();
+    }
   }
 }
