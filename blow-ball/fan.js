@@ -33,7 +33,6 @@
   };
 
   fan.start = (sp = 0.5) => {
-    console.log({ sp });
     setDefaultSpeed(sp);
   };
 })();
