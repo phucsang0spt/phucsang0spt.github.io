@@ -10,9 +10,6 @@
     "#ecf0f1",
   ];
 
-  board.balls = [];
-  board.ground = null;
-  board.wind = PhysicEntity.makeVector();
   const randRange = (min, max) => Math.random() * (max - min + 1) + min;
   const randColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
@@ -26,15 +23,26 @@
   }
 
   function spawnBalls() {
-    const newBalls = Array.from({ length: 5 }).map(() => generateBall());
+    const newBalls = Array.from({ length: 7 }).map(() => generateBall());
     for (const ball of newBalls) {
-      if (board.balls.length > 200) {
+      if (board.balls.length > 100) {
         return;
       }
 
       ball.addForce(0, randRange(0.1, 1));
       board.balls.push(ball);
     }
+  }
+
+  function spawnGrounds() {
+    board.grounds.push(
+      new Ground(board.w / 2 + 80, board.h - 100, 0.9 * board.w, 5)
+    );
+    board.grounds.push(new Ground(board.w - 100, 300, 200, 5));
+
+    board.movingBoard = new Ground(200, 150, 5, 300);
+    board.movingBoard.g = 0;
+    board.grounds.push(board.movingBoard);
   }
 
   function speedToWindForce(sp) {
@@ -46,26 +54,29 @@
     board.wind.y = 0.6 * board.wind.x; // a bit push up
   };
 
+  startButton.onclick = () => {
+    start();
+    startButton.style.display = "none";
+  };
+
   function start() {
-    board.ground = new Ground(
-      board.w / 2 + 80,
-      board.h - 100,
-      0.9 * board.w,
-      5
-    );
-    const balls = [];
-    board.balls = balls;
+    board.balls = [];
+    board.grounds = [];
+    board.wind = PhysicEntity.makeVector();
+
+    spawnGrounds();
+
     spawnBalls();
     setInterval(() => spawnBalls(), 1000);
 
     board.lastTime = new Date().getTime();
     board.deltaTime = 0;
+
+    fan.start();
+    loop();
   }
 
   function update() {
-    if (board.paused) {
-      return;
-    }
     const currentTime = new Date().getTime();
     board.deltaTime = currentTime - board.lastTime;
     board.lastTime = currentTime;
@@ -79,22 +90,28 @@
       }
       ball.loop();
       if (ball.isDead) {
-        ball.destroy();
+        ball.destroy(index);
         index--;
       }
     }
+
+    const movingBoard = board.movingBoard;
+    let dir = 0;
+    if (movingBoard.y <= -movingBoard.height / 2) {
+      dir = 2;
+      movingBoard.addForce(0, dir);
+    } else if (movingBoard.y >= movingBoard.height / 2) {
+      dir = -2;
+      movingBoard.addForce(0, dir);
+    }
+    movingBoard.loop();
   }
 
   function loop() {
-    requestAnimationFrame(loop);
+    if (board.paused) {
+      return;
+    }
     update();
+    requestAnimationFrame(loop);
   }
-
-  startButton.onclick = () => {
-    start();
-    startButton.style.display = "none";
-  };
-
-  fan.start();
-  loop();
 })();

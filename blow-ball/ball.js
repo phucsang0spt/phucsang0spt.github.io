@@ -11,25 +11,28 @@ class Ball extends BoardEntity {
     this.body.style.setProperty("--color", color);
   }
 
-  destroy() {
+  destroy(idx) {
     super.destroy();
-    const index = board.balls.findIndex((ball) => ball === this);
+    const index = idx ?? board.balls.findIndex((ball) => ball === this);
     board.balls.splice(index, 1);
   }
 
   onUpdate() {
-    const ground = board.ground;
-    if (this.isTouchedGround(ground)) {
-      this.bounceByGround(ground);
+    for (const ground of board.grounds) {
+      if (this.isTouchedGround(ground)) {
+        this.bounceByGround(ground);
+      }
     }
-    const rect = this.rect;
-    if (rect.right < 0 || rect.top > board.h) {
-      this.isDead = true;
-    }
+
     this.handleLifetime();
   }
 
   handleLifetime() {
+    const rect = this.rect;
+    if (rect.right < 0 || rect.top > board.h) {
+      this.isDead = true;
+    }
+
     this.lifetime -= board.deltaTime;
     const rate = this.lifetime / this.maxLifetime;
     if (rate < 0.3) {
@@ -71,20 +74,13 @@ class Ball extends BoardEntity {
         ? this.prevY - this.radius > gRect.bottom
         : false;
 
-    // console.log({
-    //   check: this.vel.y > 0,
-    //   py: this.prevY,
-    //   pyr: this.prevY + this.radius,
-    //   gTop: gRect.topLeft.y,
-    //   y: this.y,
-    //   willPushY,
-    // });
-
     if (willPushX) {
       if (this.vel.x > 0) {
         this.x = gRect.left - this.radius - 0.1;
+        this.addForce(-this.acc.x * 1.1, 0);
       } else {
         this.x = gRect.right + this.radius + 0.1;
+        this.addForce(-this.acc.x * 1.1, 0);
       }
     }
 
@@ -93,8 +89,8 @@ class Ball extends BoardEntity {
         this.y = gRect.top - this.radius - 0.1;
         this.addForce(0, -this.acc.y * 1.8);
       } else {
-        // will not happen now
         this.y = gRect.bottom + this.radius + 0.1;
+        this.addForce(0, -this.acc.y * 1.1);
       }
     }
   }

@@ -8,10 +8,10 @@
 .ground::before {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 0;
-  right: 0;
-  height: 1px;
+  top: 1.5px;
+  left: 1.5px;
+  right: 1.5px;
+  bottom: 1.5px;
   border-radius: 1px;
   background-color: #fff;
 }

@@ -9,6 +9,7 @@ class PhysicEntity {
 
   static G = 0.3;
 
+  g = PhysicEntity.G;
   vel = PhysicEntity.makeVector();
   acc = PhysicEntity.makeVector();
 
@@ -62,6 +63,6 @@ class PhysicEntity {
   }
 
   effectGravity() {
-    this.acc.y += PhysicEntity.G;
+    this.acc.y += this.g;
   }
 }
