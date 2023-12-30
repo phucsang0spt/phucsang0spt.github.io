@@ -17,8 +17,8 @@
     return rate * dragger.getHolderHeight();
   }
 
-  function setDefaultSpeed() {
-    const defaultSpeed = 0.2;
+  function setDefaultSpeed(sp) {
+    const defaultSpeed = sp;
     setFanSpeed(defaultSpeed);
     dragger.setPosition(speedToPosition(defaultSpeed));
     fan.onSpeedChange(defaultSpeed);
@@ -32,7 +32,8 @@
     fan.onSpeedChange(speed);
   };
 
-  fan.start = () => {
-    setDefaultSpeed();
+  fan.start = (sp = 0.5) => {
+    console.log({ sp });
+    setDefaultSpeed(sp);
   };
 })();

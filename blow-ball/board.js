@@ -10,6 +10,7 @@
     "#ecf0f1",
   ];
 
+  board.cacheSpeed = undefined;
   const randRange = (min, max) => Math.random() * (max - min + 1) + min;
   const randColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
@@ -50,6 +51,8 @@
   }
 
   fan.onSpeedChange = (speed) => {
+    board.cacheSpeed = speed;
+    if (!board.wind) return;
     board.wind.x = speedToWindForce(speed);
     board.wind.y = 0.6 * board.wind.x; // a bit push up
   };
@@ -72,7 +75,7 @@
     board.lastTime = new Date().getTime();
     board.deltaTime = 0;
 
-    fan.start();
+    fan.start(board.cacheSpeed);
     loop();
   }
 
