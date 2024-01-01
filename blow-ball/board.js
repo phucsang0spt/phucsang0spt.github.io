@@ -27,6 +27,7 @@
     const newBalls = Array.from({ length: 7 }).map(() => generateBall());
     for (const ball of newBalls) {
       if (board.balls.length > 100) {
+        ball.destroy();
         return;
       }
 
