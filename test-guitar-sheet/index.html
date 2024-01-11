@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>AlphaTab Tutorial</title>
+    <title>GuitaTabNavi AlphTab</title>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script> -->
     <script src="core.js"></script>
     <script src="https://kit.fontawesome.com/b43f0e512e.js"></script>
@@ -359,7 +359,7 @@
               // complete range
               // Normally endTick = api.clickTrack.right.tick + api.clickTrack.right.displayDuration - 1 but there some cases that next note was reached out. To prevent next note was not reached out, we munus 10 tick to endTick
               api.playbackRange = {
-                startTick: api.clickTrack.left.tick + 1,
+                startTick: api.clickTrack.left.tick,
                 endTick:
                   api.clickTrack.right.tick +
                   api.clickTrack.right.displayDuration -
@@ -371,7 +371,7 @@
           }
         }
 
-        function getNoteEffect(beat, note) {
+        function getNoteEffect(beat, note, index) {
           if (beat.tap) {
             return 4;
           }
@@ -387,12 +387,27 @@
               return 1;
             }
           }
+
+          // Tieのとき, 前の音符がbendType = 4 (BendRelease)のnoteが来たらチョークアップ（サブ表示コマンド：１）を表示し、次の音符が、
+          // 前の音と同じString、fretで且つbendTypeが０（None）の場合には、チョークダウン（サブ表示コマンド：2）を表示する。
+          if (note.bendType == BendType.None && note.isTieDestination) {
+            if (
+              beat.previousBeat.notes[index].bendType == BendType.BendRelease &&
+              beat.previousBeat.notes[index].fret == note.fret &&
+              beat.previousBeat.notes[index].string == note.string
+            ) {
+              return 2;
+            }
+          }
+
           if (!note.isDead && beat.isPalmMute) {
             return 8;
           }
+
           if (note.harmonicType !== HarmonicType.None) {
             return 3;
           }
+
           return 0;
         }
 
@@ -410,7 +425,7 @@
           const isBeatHaveHarmonicType = beat.notes.some(
             (note) => note.harmonicType !== HarmonicType.None
           );
-          const signal = beat.notes.map((note) => {
+          const signal = beat.notes.map((note, index) => {
             summaryDeadFlag = summaryDeadFlag && note.isDead;
             return {
               key: convertValues(note.string),
@@ -422,9 +437,10 @@
                 : note.isDead
                 ? 255
                 : note.fret,
-              effect: getNoteEffect(beat, note),
+              effect: getNoteEffect(beat, note, index),
             };
           });
+
           emitEventToApp({
             event: "onPlayedBeatChanged",
             payload: { signal, isDead: summaryDeadFlag },
@@ -583,13 +599,13 @@
         if (flag === "debug") {
           console.log("bootstrap called by debug");
           bootstrap("./walk.gp5");
-          setTimeout(() => {
-            window.sheetEngine.playbackSpeed = 1;
-            playTrack(2);
-            setTimeout(() => {
-              // toggleRangeMode();
-            }, 100);
-          }, 100);
+          // setTimeout(() => {
+          //   window.sheetEngine.playbackSpeed = 0.1;
+          //   playTrack(2);
+          //   setTimeout(() => {
+          //     toggleRangeMode();
+          //   }, 100);
+          // }, 100);
         }
       }, 0);
     </script>
