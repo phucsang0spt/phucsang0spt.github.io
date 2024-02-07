@@ -269,6 +269,14 @@
         onOffTrack(track);
       }
 
+      function playAtTime(fraction) {
+        window.sheetEngine.player.timePosition =
+          fraction * window.sheetEngine.endTimePosition;
+
+        window.sheetEngine.updateSettings();
+        window.sheetEngine.render();
+      }
+
       window.emitEventToApp = window.ReactNativeWebView
         ? function (obj) {
             window.ReactNativeWebView.postMessage(
@@ -279,11 +287,16 @@
 
       const emitOnPlayerPositionChanged = _.throttle(
         ({ api, currentTick, endTick }) => {
+          // just set total time once not continuous
+          if (!api.totalTime) {
+            api.totalTime = ticksToMillis(endTick, api.score.tempo); // not change even speed rate change
+          }
+
           emitEventToApp({
             event: "onPlayerPositionChanged",
             payload: {
-              currentTime: ticksToMillis(currentTick, api.score.tempo),
-              endTime: ticksToMillis(endTick, api.score.tempo),
+              currentTime: ticksToMillis(currentTick, api.score.tempo), // not change even speed rate change
+              endTime: api.totalTime,
             },
           });
         },
@@ -325,6 +338,7 @@
         api.createRangeMode = false;
         api.trackTickList = [];
         api.lastTimePosition = 0;
+        api.endTimePosition = 0;
         window.sheetEngine = api;
 
         async function handleClickLine(tick) {
@@ -463,6 +477,7 @@
           api.lostBeatStack = [];
           api.baseBeat = null;
           api.lastPlayedBeat = null;
+          api.totalTime = 0;
           onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
@@ -536,6 +551,10 @@
             return;
           }
           api.lastPlayedBeat = currentBeat;
+          if (!currentBeat.nextBeat) {
+            onBeatChange(currentBeat);
+            return;
+          }
           const isSameNextBeat =
             nextBeatLookup?.beat?.id === currentBeat.nextBeat.id;
           const nextBeatId =
@@ -585,6 +604,10 @@
 
           api.lostBeatTimeCount += delta;
           handleBeatTime(api.lostBeatTimeCount);
+
+          if (e.endTime) {
+            api.endTimePosition = e.endTime; // this will update when speed rate change
+          }
 
           emitOnPlayerPositionChanged({
             api,
