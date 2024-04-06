@@ -163,6 +163,14 @@
         window.sheetEngine.changeTrackMute([track], getTrackMuteState(track)); // mute or on track
       }
 
+      function getCapo(track) {
+        const capo = track.staves.find(
+          (stave) => stave.capo /*capo > 0 or != null*/
+        )?.capo;
+
+        return capo;
+      }
+
       async function genTrackBar() {
         await new Promise((res) => setTimeout(res, 200));
         const runBar = main.querySelectorAll(".at-cursor-beat")[0];
@@ -373,7 +381,7 @@
               // complete range
               // Normally endTick = api.clickTrack.right.tick + api.clickTrack.right.displayDuration - 1 but there some cases that next note was reached out. To prevent next note was not reached out, we munus 10 tick to endTick
               api.playbackRange = {
-                startTick: api.clickTrack.left.tick,
+                startTick: api.clickTrack.left.tick - 1,
                 endTick:
                   api.clickTrack.right.tick +
                   api.clickTrack.right.displayDuration -
@@ -405,12 +413,15 @@
           // Tieのとき, 前の音符がbendType = 4 (BendRelease)のnoteが来たらチョークアップ（サブ表示コマンド：１）を表示し、次の音符が、
           // 前の音と同じString、fretで且つbendTypeが０（None）の場合には、チョークダウン（サブ表示コマンド：2）を表示する。
           if (note.bendType == BendType.None && note.isTieDestination) {
-            if (
-              beat.previousBeat.notes[index].bendType == BendType.BendRelease &&
-              beat.previousBeat.notes[index].fret == note.fret &&
-              beat.previousBeat.notes[index].string == note.string
-            ) {
-              return 2;
+            const noteOfPreviousBeat = beat.previousBeat.notes[index];
+            if (noteOfPreviousBeat) {
+              if (
+                noteOfPreviousBeat.bendType == BendType.BendRelease &&
+                noteOfPreviousBeat.fret == note.fret &&
+                noteOfPreviousBeat.string == note.string
+              ) {
+                return 2;
+              }
             }
           }
 
@@ -481,7 +492,10 @@
           onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
-            runningTracks: api.tracks.map((track) => trackToJSON(track)),
+            payload: {
+              runningTracks: api.tracks.map((track) => trackToJSON(track)),
+              capo: getCapo(api.tracks[0]),
+            },
           });
         });
 
