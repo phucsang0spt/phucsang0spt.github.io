@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <title>GuitaTabNavi AlphTab</title>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script> -->
-    <script src="core.js"></script>
-    <script src="https://kit.fontawesome.com/b43f0e512e.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.2.3/dist/alphaTab.min.js"></script>
+    <script src="kit.fontawesome.js"></script>
     <script src="debounce.min.js"></script>
     <style type="text/css">
       body {
@@ -115,6 +115,30 @@
         justify-content: center;
         background-color: #ffffff30;
       }
+
+      .my-btn {
+        width: 120px;
+        height: 90px;
+        background-color: #0078ff;
+        color: #fff;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 444;
+        user-select: none;
+      }
+
+      .my-btn-resume {
+        width: 120px;
+        height: 90px;
+        background-color: #0078ff;
+        color: #fff;
+        position: fixed;
+        top: 20px;
+        right: 150px;
+        z-index: 444;
+        user-select: none;
+      }
     </style>
   </head>
 
@@ -125,6 +149,8 @@
       </div>
     </template>
     <div class="at-wrap">
+      <button class="my-btn" onmouseup="onstart();">Start</button>
+      <button class="my-btn-resume" onmouseup="onresume();">Resume</button>
       <div class="at-viewport">
         <div class="at-main"></div>
       </div>
@@ -134,6 +160,7 @@
     </div>
 
     <script type="text/javascript">
+      console.log("xxxx");
       // load elements
       const wrapper = document.querySelector(".at-wrap");
       const main = wrapper.querySelector(".at-main");
@@ -489,7 +516,7 @@
           api.baseBeat = null;
           api.lastPlayedBeat = null;
           api.totalTime = 0;
-          onOffTrack(api.tracks[0]);
+          // onOffTrack(api.tracks[0]);
           emitEventToApp({
             event: "onRenderFinished",
             payload: {
@@ -635,8 +662,7 @@
         const [, flag] = window.location.hash?.split("#");
         if (flag === "debug") {
           console.log("bootstrap called by debug");
-          bootstrap("./walk.gp5");
-          // setTimeout(() => {
+          bootstrap("./canon.gp");
           //   window.sheetEngine.playbackSpeed = 0.1;
           //   playTrack(2);
           //   setTimeout(() => {
@@ -645,6 +671,18 @@
           // }, 100);
         }
       }, 0);
+
+      async function onresume() {
+        myctx.resume().then(() => {
+          console.log("resume success");
+        });
+      }
+
+      async function onstart() {
+        // window.ReactNativeWebView?.postMessage("start");
+        sheetEngine.play();
+        // window.location.reload();
+      }
     </script>
   </body>
 </html>

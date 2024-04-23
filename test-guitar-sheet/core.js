@@ -26903,6 +26903,7 @@
             super.play();
             let ctx = this._context;
             // create a script processor node which will replace the silence with the generated audio
+            console.log("===AudioWorkletNode==", Environment.scriptFile)
             ctx.audioWorklet.addModule(Environment.scriptFile).then(() => {
                 this._worklet = new AudioWorkletNode(ctx, 'alphatab', {
                     numberOfOutputs: 1,
@@ -41138,6 +41139,9 @@
          * @partial
          */
         static platformInit() {
+            console.log("===Environment.isRunningInAudioWorklet", Environment.isRunningInAudioWorklet)
+            console.log("===Environment.isRunningInWorker", Environment.isRunningInAudioWorklet)
+
             if (Environment.isRunningInAudioWorklet) {
                 AlphaSynthWebWorklet.init();
             }
