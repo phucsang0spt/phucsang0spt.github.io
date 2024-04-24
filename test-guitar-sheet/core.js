@@ -14,6 +14,11 @@
  * Copyright (C) 2012 Steve Folta (https://github.com/stevefolta/SFZero)
  */
 
+function int32ToInt16(num) {
+    return (num << 16) >> 16;
+}
+
+
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -15058,7 +15063,7 @@
                 let samplesToRead = Math.min(samplesLeft, (sampleBuffer.length / 2) | 0);
                 reader.read(sampleBuffer, 0, samplesToRead * 2);
                 for (let i = 0; i < samplesToRead; i++) {
-                    const shortSample = TypeConversions.int32ToInt16((sampleBuffer[i * 2 + 1] << 8) | sampleBuffer[i * 2]);
+                    const shortSample = int32ToInt16((sampleBuffer[i * 2 + 1] << 8) | sampleBuffer[i * 2]);
                     samples[samplesPos + i] = shortSample / 32767;
                 }
                 samplesLeft -= samplesToRead;
