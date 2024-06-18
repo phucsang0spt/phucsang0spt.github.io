@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lonely Fan</title>
+
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #292929;
+        display: flex;
+        justify-content: center;
+      }
+
+      .fan {
+        /* khởi tạo kích thước cho cây quạt */
+        --f-w: 150px;
+        --f-h: 300px;
+
+        /* khởi tạo kích thước cho đầu quạt */
+        --f-head-w: var(--f-w);
+        --f-head-h: var(--f-w);
+
+        /* khởi tạo kích thước cho thân quạt */
+        --f-body-w: 20px; /* cho thân quạt rộng 20px */
+        --f-body-h: calc(var(--f-h) - var(--f-head-w) + var(--f-head-h) / 2);
+
+        /* khởi tạo kích thước cho cổ quạt */
+        --f-neck-w: 50px;
+        --f-neck-h: 20px;
+
+        width: var(--f-w);
+        height: var(--f-h);
+
+        position: relative;
+      }
+
+      .f-head {
+        --f-speed-rate: 0; /*Tốc độ quạt, 0 có nghĩa là đang tắt */
+        width: var(--f-head-w);
+        height: var(--f-head-h);
+      }
+
+      /* tạo cổ quạt */
+      .f-head::before {
+        content: "";
+        width: var(--f-neck-w);
+        height: var(--f-neck-h);
+        background-color: #fff;
+        position: absolute;
+        top: calc(var(--f-head-h) / 2);
+        left: calc(var(--f-head-w) / 2 - var(--f-body-w) / 2);
+        transform: translateX(-100%);
+      }
+
+      .f-wing {
+        width: var(--f-head-w);
+        height: var(--f-head-h);
+
+        position: absolute;
+        top: calc(var(--f-neck-h) / 2);
+        left: calc(0px - var(--f-neck-w) - 10px);
+
+        z-index: 2;
+
+        transform: rotateY(70deg);
+      }
+
+      .f-wing img {
+        width: var(--f-head-w);
+        height: var(--f-head-h);
+        animation: f-spin calc(1s / var(--f-speed-rate)) linear infinite;
+      }
+
+      @keyframes f-spin {
+        from {
+          transform: rotateZ(0);
+        }
+        to {
+          transform: rotateZ(360deg);
+        }
+      }
+
+      .f-body {
+        width: var(--f-body-w);
+        height: var(--f-body-h);
+        background-color: #fff;
+
+        /* Đưa thân quạt ra chính giữa */
+        position: absolute;
+        left: 50%;
+        top: calc(var(--f-head-h) / 2); /* Đưa thân xuống giữa đầu quạt */
+        transform: translateX(-50%); /*Dịch chuyển vị trí vào tâm thân quạt*/
+      }
+
+      /* tạo đáy quạt */
+      .f-body::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: calc(var(--f-body-w) / 2);
+        transform: translateX(-50%);
+        width: 100px;
+        height: 40px;
+        border-top-left-radius: 100%;
+        border-top-right-radius: 100%;
+        background-color: #f1c40f;
+      }
+
+      input[type="radio"] {
+        display: none; /*Ẩn các input đi*/
+      }
+
+      .switcher {
+        /* khởi tạo kích thước */
+        --swt-size: 18px;
+        --swt-gap: 5px; /* Khoảng cách mỗi công tắc */
+        --swt-len: calc(var(--swt-size) + var(--swt-gap));
+        --swt-index: 0; /* Số thứ tự của mỗi công tắc */
+        --swt-total-len: calc(
+          4 * var(--swt-size) + 3 * var(--swt-gap)
+        ); /* Tổng chiều dài cả 4 công tắc */
+        --swt-color: #2c3e50; /*Màu công tắc*/
+
+        width: var(--swt-size);
+        height: var(--swt-size);
+
+        border-radius: 100%;
+        background-color: var(--swt-color);
+        position: absolute;
+        bottom: 10px;
+        left: calc(
+          50% + var(--swt-index) * var(--swt-len) - var(--swt-total-len) / 2
+        );
+        z-index: 3;
+      }
+
+      .switcher[for="swt-0"] {
+        --swt-index: 0;
+        --swt-color: #2c3e50;
+      }
+      .switcher[for="swt-1"] {
+        --swt-index: 1;
+        --swt-color: #3498db;
+      }
+      .switcher[for="swt-2"] {
+        --swt-index: 2;
+        --swt-color: #e67e22;
+      }
+      .switcher[for="swt-3"] {
+        --swt-index: 3;
+        --swt-color: #e74c3c;
+      }
+
+      /* Tạo hiệu ứng con trỏ khi CT chưa bật */
+      input:not(:checked) + .switcher {
+        cursor: pointer;
+      }
+
+      /* Trạng thái khi công tắc dc bật */
+      input:checked + .switcher::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 100%;
+        background-color: #fff;
+      }
+
+      /* Thay đổi tốc độ tương ứng */
+      input:checked + .switcher[for="swt-0"] ~ .f-head {
+        --f-speed-rate: 0;
+      }
+      input:checked + .switcher[for="swt-1"] ~ .f-head {
+        --f-speed-rate: 1;
+      }
+      input:checked + .switcher[for="swt-2"] ~ .f-head {
+        --f-speed-rate: 2;
+      }
+      input:checked + .switcher[for="swt-3"] ~ .f-head {
+        --f-speed-rate: 3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="fan">
+      <!-- thêm 4 công tắc cho quạt -->
+
+      <!-- Trạng thái mặc định là Đóng -->
+      <!-- CT Đóng -->
+      <input type="radio" checked id="swt-0" name="switcher" />
+      <label for="swt-0" class="switcher"></label>
+
+      <!-- CT Bậc 1 -->
+      <input type="radio" id="swt-1" name="switcher" />
+      <label for="swt-1" class="switcher"></label>
+
+      <!-- CT Bậc 2 -->
+      <input type="radio" id="swt-2" name="switcher" />
+      <label for="swt-2" class="switcher"></label>
+
+      <!-- CT Bậc 3 -->
+      <input type="radio" id="swt-3" name="switcher" />
+      <label for="swt-3" class="switcher"></label>
+
+      <!-- chia quạt làm 2 phần đầu và thân -->
+      <div class="f-head">
+        <div class="f-wing">
+          <img src="images/propeller.png" />
+        </div>
+      </div>
+      <div class="f-body"></div>
+    </div>
+  </body>
+</html>
